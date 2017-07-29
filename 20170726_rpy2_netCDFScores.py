@@ -13,6 +13,23 @@ srl = importr('scoringRules')
 ob_file = "/home/manuel/Dokumente/Studium/Karlsruhe/1516WS/Praktikum/ensembleScore/Input/Observation/ECMWF_20131001-31date_06int_uv10m_wind_MSLP_ECMWF_analysis.nc"
 fc_file = "/home/manuel/Dokumente/Studium/Karlsruhe/1516WS/Praktikum/ensembleScore/Input/Forecast/ECMWF_okt2013/EPS_uv10m_MSLP_6h_5day_20131001.nc"
 
+# Define Wrapper
+def es_sample(y, dat):
+    # Names like srl, np2ri have to be set by the ensembletools package
+    # in order to avoid imports in each function call
+    y_r = rpy2.robjects.FloatVector(y)
+    dat_r = np2ri.py2ri(dat)
+    return srl.es_sample(y_r, dat_r)[0]
+    
+def vs_sample(y, dat):
+    y_r = rpy2.robjects.FloatVector(y)
+    dat_r = np2ri.py2ri(dat)
+    return srl.vs_sample(y_r, dat_r)[0]
+    
+def crps_sample(y, dat):
+    dat_r = rpy2.robjects.FloatVector(dat)
+    return srl.crps_sample(y, dat_r)[0]
+    
 # Read File
 obs = xr.open_dataset(ob_file)
 forc = xr.open_dataset(fc_file)
@@ -35,19 +52,23 @@ forc_vec = forc_arr.stack(m = ('time', 'longitude', 'latitude')).values
 
 # Compute Scores
 N = obs_vec.shape[1]
+crps = 0
 escr = 0
 vscr = 0
 for i in range(0,N - 1):
-    ## Part which (more or less) could be put into a wrapper around the functions ###
-    # - convert to rpy2 format
-    y_vec = rpy2.robjects.FloatVector(obs_vec[:,i])
-    dat_mat = np2ri.py2ri(forc_vec[:,:,i])
-    # - calculate scores
-    escr = escr + srl.es_sample(y_vec, dat_mat)[0]
-    vscr = vscr + srl.vs_sample(y_vec, dat_mat)[0]
-    ### ------------------------------------------------------------------------- ###
+    y = obs_vec[0,i]    
+    dat = forc_vec[0,:,i]
+    crps += crps_sample(y, dat)
+    
+    y_vec = obs_vec[:,i]
+    dat_mat = forc_vec[:,:,i]
+    escr += es_sample(y_vec, dat_mat)
+    vscr += vs_sample(y_vec, dat_mat)
+crps = crps/N
 vscr = vscr/N
 escr = escr/N
+print('CRPS')
+print(crps)
 print('Energy Score')
 print(escr)
 print('Variogram Score')
