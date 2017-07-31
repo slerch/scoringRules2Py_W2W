@@ -36,25 +36,23 @@ def es_sample(y, dat):
         
     return srl.es_sample(y_r, dat_r)[0]
     
-def es_sample_vec(y_vec, dat_mat):
+def es_sample_vec(y_mat, dat_mat):
     try:
-        y_vec = np.array(y_vec)
-        y_vec = np.expand_dims(y_vec, 1)
+        y_mat = np.array(y_mat)
+        y_mat = np.expand_dims(y_mat, 1)
         dat_mat = np.array(dat_mat)
-       # y_r = rpy2.robjects.FloatVector(y_vec)
-       # dat_r = np2ri.py2ri(dat_mat)
     except:
         print('Input has wrong format.')
     else:
         if ( 
-             len(y_vec.shape) != 3 or 
+             len(y_mat.shape) != 3 or 
              len(dat_mat.shape) != 3 or 
-             y_vec.shape[0] != dat_mat.shape[0] or
-             y_vec.shape[2] != dat_mat.shape[2]
+             y_mat.shape[0] != dat_mat.shape[0] or
+             y_mat.shape[2] != dat_mat.shape[2]
         ):
             raise ValueError('Parameters have wrong dimension.')
 
-    df = np.concatenate((y_vec,dat_mat),axis = 1)
+    df = np.concatenate((y_mat,dat_mat),axis = 1)
     df_r = np2ri.py2ri(df)
     rpy2.robjects.globalenv['df'] =  df_r
     
@@ -71,25 +69,23 @@ def vs_sample(y, dat):
 
     return srl.vs_sample(y_r, dat_r)[0]
     
-def vs_sample_vec(y_vec, dat_mat):
+def vs_sample_vec(y_mat, dat_mat):
     try:
-        y_vec = np.array(y_vec)
-        y_vec = np.expand_dims(y_vec, 1)
+        y_mat = np.array(y_mat)
+        y_mat = np.expand_dims(y_mat, 1)
         dat_mat = np.array(dat_mat)
-       # y_r = rpy2.robjects.FloatVector(y_vec)
-       # dat_r = np2ri.py2ri(dat_mat)
     except:
         print('Input has wrong format.')
     else:
         if ( 
-             len(y_vec.shape) != 3 or 
+             len(y_mat.shape) != 3 or 
              len(dat_mat.shape) != 3 or 
-             y_vec.shape[0] != dat_mat.shape[0] or
-             y_vec.shape[2] != dat_mat.shape[2]
+             y_mat.shape[0] != dat_mat.shape[0] or
+             y_mat.shape[2] != dat_mat.shape[2]
         ):
             raise ValueError('Parameters have wrong dimension.')
 
-    df = np.concatenate((y_vec,dat_mat),axis = 1)
+    df = np.concatenate((y_mat,dat_mat),axis = 1)
     df_r = np2ri.py2ri(df)
     rpy2.robjects.globalenv['df'] =  df_r
     
@@ -138,11 +134,9 @@ forc_sb = forc[dict(time=[4])]
 obs_arr = obs_sb.to_array()
 # - drop the dimensions time, longitude and latitude and extract the numpy array
 obs_vec = obs_arr.stack(m = ('time', 'longitude', 'latitude')).values
-#obs_vec_r = rpy2.robjects.FloatVector(obs_vec[0,:])
 
 forc_arr = forc_sb.to_array()
 forc_vec = forc_arr.stack(m = ('time', 'longitude', 'latitude')).values
-#forc_vec_r =  np2ri.py2ri(forc_vec[0,:,:])
 
 # Compute Scores, in a loop
 loop_start = time.time()
