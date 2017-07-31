@@ -1,10 +1,18 @@
 # -*- coding: utf-8 -*-
 """
+Created on Mon Jul 31 09:10:04 2017
+
+@author: manuel
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Tue Jul 25 16:19:47 2017
 
 @author: manuel
 """
 import xarray as xr
+import numpy as np
 import rpy2
 import rpy2.robjects.numpy2ri as np2ri
 from rpy2.robjects.packages import importr
@@ -17,18 +25,53 @@ fc_file = "/home/manuel/Dokumente/Studium/Karlsruhe/1516WS/Praktikum/ensembleSco
 def es_sample(y, dat):
     # Names like srl, np2ri have to be set by the ensembletools package
     # in order to avoid imports in each function call
-    y_r = rpy2.robjects.FloatVector(y)
-    dat_r = np2ri.py2ri(dat)
+    try:
+        y = np.array(y)
+        dat = np.array(dat)
+        y_r = rpy2.robjects.FloatVector(y)
+        dat_r = np2ri.py2ri(dat)
+    except:
+        print('Input has wrong format.')
+        
     return srl.es_sample(y_r, dat_r)[0]
     
 def vs_sample(y, dat):
-    y_r = rpy2.robjects.FloatVector(y)
-    dat_r = np2ri.py2ri(dat)
+    try:
+        y = np.array(y)
+        dat = np.array(dat)
+        y_r = rpy2.robjects.FloatVector(y)
+        dat_r = np2ri.py2ri(dat)
+    except:
+        print('Input has wrong format.')
+        
     return srl.vs_sample(y_r, dat_r)[0]
     
 def crps_sample(y, dat):
-    dat_r = rpy2.robjects.FloatVector(dat)
-    return srl.crps_sample(y, dat_r)[0]
+    try:
+        y_r = float(y)
+        dat = np.array(dat)
+        dat_r = rpy2.robjects.FloatVector(dat)
+    except:
+        print('Input has wrong format.')
+        
+    return srl.crps_sample(y_r, dat_r)[0]
+    
+def crps_sample_vec(y_vec, dat_mat):
+    try:
+        y_vec = np.array(y_vec)
+        dat_mat = np.array(dat_mat)
+        y_r = rpy2.robjects.FloatVector(y_vec)
+        dat_r = np2ri.py2ri(dat_mat)
+    except:
+        print('Input has wrong format.')
+    else:
+        if len(y_vec.shape) != 1 or len(dat_mat.shape) != 2 or y_vec.shape[0] != dat_mat.shape[1]:
+            raise ValueError('Parameters have wrong dimension.')
+
+    rpy2.robjects.globalenv['obs'] =  y_r
+    rpy2.robjects.globalenv['forc'] =  dat_r
+    
+    return rpy2.robjects.r('mean(apply(rbind(obs,forc), 2, function(x) crps_sample(x[1], x[-1])))')[0]
     
 # Read File
 obs = xr.open_dataset(ob_file)
@@ -46,16 +89,18 @@ forc_sb = forc[dict(time=[4])]
 obs_arr = obs_sb.to_array()
 # - drop the dimensions time, longitude and latitude and extract the numpy array
 obs_vec = obs_arr.stack(m = ('time', 'longitude', 'latitude')).values
+obs_vec_r = rpy2.robjects.FloatVector(obs_vec[0,:])
 
 forc_arr = forc_sb.to_array()
 forc_vec = forc_arr.stack(m = ('time', 'longitude', 'latitude')).values
+forc_vec_r =  np2ri.py2ri(forc_vec[0,:,:])
 
-# Compute Scores
+# Compute Scores in Python
 N = obs_vec.shape[1]
 crps = 0
 escr = 0
 vscr = 0
-for i in range(0,N - 1):
+for i in range(0,N):
     y = obs_vec[0,i]    
     dat = forc_vec[0,:,i]
     crps += crps_sample(y, dat)
@@ -73,3 +118,8 @@ print('Energy Score')
 print(escr)
 print('Variogram Score')
 print(vscr)
+
+# Compute Scores in R via apply
+crps_v = crps_sample_vec(obs_vec[0,:], forc_vec[0,:,:])
+print('CRPS')
+print(crps_v)
