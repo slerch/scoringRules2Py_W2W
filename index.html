@@ -1,0 +1,215 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Scoring Tools documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-scoringtools">
+<span id="welcome-to-scoring-tools-documentation"></span><h1>Welcome to Scoring Tools’ documentation!<a class="headerlink" href="#module-scoringtools" title="Permalink to this headline">¶</a></h1>
+<p>This module is a interface for some functionality of the R-package scoringRules.
+It is possible to calculate
+various scores for ensemble predictions. Namely the Continuous Ranked 
+Probability Score (CRPS), the energy score and
+the variogram score.</p>
+<dl class="function">
+<dt id="scoringtools.crps_sample">
+<code class="descclassname">scoringtools.</code><code class="descname">crps_sample</code><span class="sig-paren">(</span><em>y</em>, <em>dat</em><span class="sig-paren">)</span><a class="headerlink" href="#scoringtools.crps_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample Continuous Ranked Probability Score (CRPS)</p>
+<p>This function calculates the CRPS for a given pair of
+observation (y) and ensemble prediction (dat). The observation
+y is considered to be univariate.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">y (float): Univariate observation.</p>
+<p class="last">dat (np.array): Ensemble prediction for value y of length m which is
+the number of ensemble members.</p>
+</dd>
+<dt>Returns:</dt>
+<dd>float: Returns the variogram score of the forecast-observation pair.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="scoringtools.crps_sample_vec">
+<code class="descclassname">scoringtools.</code><code class="descname">crps_sample_vec</code><span class="sig-paren">(</span><em>y_vec</em>, <em>dat_mat</em><span class="sig-paren">)</span><a class="headerlink" href="#scoringtools.crps_sample_vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample Continuous Ranked Probability Score (CRPS); vectorized version</p>
+<p>This function calculates the CRPS for a given pair of
+a series of observations (y_vec) and 
+corresponding ensemble predictions (dat_mat). The data in
+y_vec is considered to be a series of univariate observations.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">y_vec (np.array): Series of multivariate observations of 
+length n which is the number of observations.</p>
+<p class="last">dat_mat (np.array): Ensemble prediction for the values y_vec containing
+m times n values where m is the number of ensemble members.</p>
+</dd>
+<dt>Returns:</dt>
+<dd>float: Returns the CRPS of the forecast-observation series.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="scoringtools.es_sample">
+<code class="descclassname">scoringtools.</code><code class="descname">es_sample</code><span class="sig-paren">(</span><em>y</em>, <em>dat</em><span class="sig-paren">)</span><a class="headerlink" href="#scoringtools.es_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample Energy Score</p>
+<p>This function calculates the energy score for a given pair of
+observation (y) and ensemble prediction (dat). The observation
+y is considered to be multivariate.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first docutils">
+<dt>y (np.array): Multivariate observation of length d greater </dt>
+<dd>than 1.</dd>
+</dl>
+<p class="last">dat (np.array): Ensemble prediction for value y containing 
+d times m values, where m is the 
+number of ensemble members.</p>
+</dd>
+<dt>Returns:</dt>
+<dd>float: Returns the energy score of the forecast-observation pair.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="scoringtools.es_sample_vec">
+<code class="descclassname">scoringtools.</code><code class="descname">es_sample_vec</code><span class="sig-paren">(</span><em>y_mat</em>, <em>dat_mat</em><span class="sig-paren">)</span><a class="headerlink" href="#scoringtools.es_sample_vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample Energy Score; vectorized version</p>
+<p>This function calculates the energy score for a given pair of
+a series of observations (y_mat) and 
+corresponding ensemble predictions (dat_mat). The data in
+y_mat is considered to be a series of multivariate observations.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">y_mat (np.array): Series of multivariate observations of 
+dimension d times n. Where d is the dimension of the multivariate
+observation and n the number of observations.</p>
+<p class="last">dat (np.array): Ensemble prediction for the values y_mat containing
+d times m times n values where m is the number of ensemble members.</p>
+</dd>
+<dt>Returns:</dt>
+<dd>float: Returns the energy score of the forecast-observation series.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="scoringtools.vs_sample">
+<code class="descclassname">scoringtools.</code><code class="descname">vs_sample</code><span class="sig-paren">(</span><em>y</em>, <em>dat</em><span class="sig-paren">)</span><a class="headerlink" href="#scoringtools.vs_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample Variogram Score</p>
+<p>This function calculates the variogram score for a given pair of
+observation (y) and ensemble prediction (dat). The observation
+y is considered to be multivariate.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first docutils">
+<dt>y (np.array): Multivariate observation of length d greater </dt>
+<dd>than 1.</dd>
+</dl>
+<p class="last">dat (np.array): Ensemble prediction for value y containing 
+d times m values, where m is the 
+number of ensemble members.</p>
+</dd>
+<dt>Returns:</dt>
+<dd>float: Returns the variogram score of the forecast-observation pair.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="scoringtools.vs_sample_vec">
+<code class="descclassname">scoringtools.</code><code class="descname">vs_sample_vec</code><span class="sig-paren">(</span><em>y_mat</em>, <em>dat_mat</em><span class="sig-paren">)</span><a class="headerlink" href="#scoringtools.vs_sample_vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample Variogram Score; vectorized version</p>
+<p>This function calculates the Energy score for a given pair of
+a series of observations (y_mat) and 
+corresponding ensemble predictions (dat_mat). The data in
+y_mat is considered to be a series of multivariate observations.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">y_mat (np.array): Series of multivariate observations of 
+dimension d times n. Where d is the dimension of the multivariate
+observation and n the number of observations.</p>
+<p class="last">dat (np.array): Ensemble prediction for the values y_mat containing
+d times m times n values where m is the number of ensemble members.</p>
+</dd>
+<dt>Returns:</dt>
+<dd>float: Returns the variogram score of the forecast-observation series.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html#document-index">Scoring Tools</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html#document-index">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Manuel Klar.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
