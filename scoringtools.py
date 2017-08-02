@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This module is a interface for some functionality of the R-package scoringRules.
+This module is an interface for some functionality of the R-package scoringRules.
 It is possible to calculate
 various scores for ensemble predictions. Namely the Continuous Ranked 
 Probability Score (CRPS), the energy score and
@@ -163,7 +163,7 @@ def crps_sample(y, dat):
         the number of ensemble members.
 
     Returns:
-        float: Returns the variogram score of the forecast-observation pair.
+        float: Returns the CRPS of the forecast-observation pair.
 
     """
     try:
