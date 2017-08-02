@@ -19,8 +19,8 @@ import rpy2.robjects.numpy2ri as np2ri
 from rpy2.robjects.packages import importr
 srl = importr('scoringRules')
 
-ob_file = "/home/manuel/Dokumente/Studium/Karlsruhe/1516WS/Praktikum/ensembleScore/Input/Observation/ECMWF_20131001-31date_06int_uv10m_wind_MSLP_ECMWF_analysis.nc"
-fc_file = "/home/manuel/Dokumente/Studium/Karlsruhe/1516WS/Praktikum/ensembleScore/Input/Forecast/ECMWF_okt2013/EPS_uv10m_MSLP_6h_5day_20131001.nc"
+ob_file = "/home/sebastian/Dropbox/Manuel_HIWI/code/ECMWF_20131001-31date_06int_uv10m_wind_MSLP_ECMWF_analysis.nc"
+fc_file = "/home/sebastian/Dropbox/Manuel_HIWI/code/EPS_uv10m_MSLP_6h_5day_20131001.nc"
 
 # Define Wrapper
 def es_sample(y, dat):
@@ -145,7 +145,7 @@ crps = 0
 escr = 0
 vscr = 0
 for i in range(0,N):
-    y = obs_vec[0,i]    
+    y = obs_vec[0,i] # crps computed only for mslp    
     dat = forc_vec[0,:,i]
     crps += crps_sample(y, dat)
     
@@ -166,9 +166,21 @@ print(vscr)
 print('Time needed [s]')
 print(round(loop_end - loop_start,4))
 
+# additional example: crps for all variables
+# compute crps for all 3 variables
+crps2 = np.zeros([3,N])
+for i in range(0,N):
+    for j in range(0,obs_vec.shape[0]):
+        y = obs_vec[j,i]
+        dat = forc_vec[j,:,i]
+        crps2[j,i] = crps_sample(y, dat)
+
+# compute column-wise mean        
+np.mean(crps2, axis=1)
+
 # Compute Scores, no loop via apply (faster)
 vec_start = time.time()
-crps_v = crps_sample_vec(obs_vec[0,:], forc_vec[0,:,:])
+crps_v = crps_sample_vec(obs_vec[0,:], forc_vec[0,:,:]) # crps computed only for mslp 
 escr_v = es_sample_vec(obs_vec, forc_vec)
 vscr_v = vs_sample_vec(obs_vec, forc_vec)
 vec_end = time.time()
