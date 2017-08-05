@@ -2,7 +2,7 @@
 
 Python interface for the scoringRules R package (https://github.com/FK83/scoringRules) for use within the 'Ensemble Tools' cross-cutting activity within the Transregional Collaborative Research Center 'Waves to Weather' (http://wavestoweather.de)
 
-## Basic system requirements and installation: 
+## Basic requirements
  * Python 3.5+
  * Python-package rpy2 (https://rpy2.bitbucket.io/)
  * R 3.2+ (https://www.r-project.org/)
