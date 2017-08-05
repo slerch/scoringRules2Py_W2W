@@ -7,7 +7,7 @@ Python interface for the scoringRules R package (https://github.com/FK83/scoring
  * R-package scoringRules (version 0.9.2+), e.g. via calling `install.packages("scoringRules")` within R. 
  * Python 3.5+
  * Python-package rpy2, e.g. https://rpy2.bitbucket.io/ or via `pip3 install rpy2`
- ..* If installation of rpy2 fails try reinstalling R from https://www.r-project.org/
+ ...- If installation of rpy2 fails try reinstalling R from https://www.r-project.org/
 
 ## Optional requirements
  * netCDF4 and thy python-package netCDF4
