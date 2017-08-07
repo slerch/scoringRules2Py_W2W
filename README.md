@@ -13,6 +13,6 @@ Python interface for the scoringRules R package (https://github.com/FK83/scoring
  * Python-package xarray
 
 ## History:
-August 2017: main code and documentation
-July 2017: initial commits
-June 2017: repository created
+ * August 2017: main code and documentation
+ * July 2017: initial commits
+ * June 2017: repository created
