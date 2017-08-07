@@ -1,34 +1,35 @@
 # -*- coding: utf-8 -*-
 """
-This module is an interface for some functionality of the R-package scoringRules.
-It is possible to calculate
-various scores for ensemble predictions. Namely the Continuous Ranked 
-Probability Score (CRPS), the energy score and
-the variogram score.
+Interface for some functionality of the R-package scoringRules.
+It computes univariate and multivariate scores of the form *S(y, dat)*, where *S* is a
+proper scoring rule, *y* is a *d*-dimensional realization vector and
+*dat* is a simulated sample of multivariate forecasts. Available are
+CRPS, energy score and variogram score of order *p*.
+
 """
 
 import numpy as np
 import rpy2
 import rpy2.robjects.numpy2ri as np2ri
 from rpy2.robjects.packages import importr
-srl = importr('scoringRules')
+srl = importr('scoringRules') 
 
 def es_sample(y, dat):
     """Sample Energy Score
 
-    This function calculates the energy score for a given pair of
-    observation (y) and ensemble prediction (dat). The observation
-    y is considered to be multivariate.
+    Compute the energy score ES(*y*, *dat*), where *y* is a *d*-dimensional
+    realization vector and dat is a sample of multivariate
+    forecasts.
 
     Args:
-        y (np.array): Multivariate observation of length d greater 
-                            than 1.
-        dat (np.array): Ensemble prediction for value y containing 
-        d times m values, where m is the 
-        number of ensemble members.
+        *y* (np.array): Realized values (numeric vector of length *d*).
+        
+        *dat* (np.array): Forecast sample of shape (*d*, *m*), where 
+        *d* is the dimension of the realization and 
+        *m* the number of sample members.
 
     Returns:
-        float: Returns the energy score of the forecast-observation pair.
+        float: Energy score of the forecast-observation pair.
 
     """
     try:
@@ -41,131 +42,167 @@ def es_sample(y, dat):
         
     return srl.es_sample(y_r, dat_r)[0]
     
-def es_sample_vec(y_mat, dat_mat):
+def es_sample_vec(y_arr, dat_arr):
     """Sample Energy Score; vectorized version
 
-    This function calculates the energy score for a given pair of
-    a series of observations (y_mat) and 
-    corresponding ensemble predictions (dat_mat). The data in
-    y_mat is considered to be a series of multivariate observations.
+    Compute the energy score ES(*y_arr*, *dat_arr*), where *y_arr* is a series of 
+    *d*-dimensional realizations and *dat_arr* is a seires of 
+    samples of multivariate forecasts.
 
     Args:
-        y_mat (np.array): Series of multivariate observations of 
-        dimension d times n. Where d is the dimension of the multivariate
-        observation and n the number of observations.
+        *y_arr* (np.array): Series of realized values of 
+        shape (*d*, *n*), where *d* is the dimension of the realized values,
+        and *n* the number of realizations. Hence each column contains a single 
+        realization.
         
-        dat (np.array): Ensemble prediction for the values y_mat containing
-        d times m times n values where m is the number of ensemble members.
+        *dat_arr* (np.array): Forecast sample  
+        of shape (*d*, *m*, *n*), where
+        *d* is the dimension of the realized values, *m* the number of 
+        samples, and *n* the number of realizations.
 
     Returns:
-        float: Returns the energy score of the forecast-observation series.
+        np.array: Energy score of each forecast-observation pair.
 
     """
     try:
-        y_mat = np.array(y_mat)
-        y_mat = np.expand_dims(y_mat, 1)
-        dat_mat = np.array(dat_mat)
+        y_arr = np.array(y_arr)
+        y_arr = np.expand_dims(y_arr, 1)
+        dat_arr = np.array(dat_arr)
     except Exception:
         print('Input has wrong format.')
     else:
-        if (len(y_mat.shape) != 3 
-            or len(dat_mat.shape) != 3
-            or y_mat.shape[0] != dat_mat.shape[0]
-            or y_mat.shape[2] != dat_mat.shape[2]
+        if (len(y_arr.shape) != 3 
+            or len(dat_arr.shape) != 3
+            or y_arr.shape[0] != dat_arr.shape[0]
+            or y_arr.shape[2] != dat_arr.shape[2]
         ):
             raise ValueError('Parameters have wrong dimension.')
 
-    df = np.concatenate((y_mat,dat_mat),axis = 1)
+    df = np.concatenate((y_arr,dat_arr),axis = 1)
     df_r = np2ri.py2ri(df)
     rpy2.robjects.globalenv['df'] =  df_r
     
-    return rpy2.robjects.r('mean(apply(df, c(3), function(x) es_sample(x[,1], x[,-1])))')[0]
+    escr_r = rpy2.robjects.r('apply(df, c(3), function(x) es_sample(x[,1], x[,-1]))')
+    return np.array(escr_r)    
     
-def vs_sample(y, dat):
+def vs_sample(y, dat, w=None, p=0.5):
     """Sample Variogram Score
 
-    This function calculates the variogram score for a given pair of
-    observation (y) and ensemble prediction (dat). The observation
-    y is considered to be multivariate.
+    Compute the variogram score VS(*y*, *dat*) of order *p*, where *y* is a *d*-dimensional
+    realization vector and dat is a sample of multivariate
+    forecasts.
 
     Args:
-        y (np.array): Multivariate observation of length d greater 
-                            than 1.
-        dat (np.array): Ensemble prediction for value y containing 
-        d times m values, where m is the 
-        number of ensemble members.
+        *y* (np.array): Realized values (numeric vector of length *d*).
+        
+        *dat* (np.array): Forecast sample of shape (*d*, *m*), where 
+        *d* is the dimension of the realization and 
+        *m* the number of sample members.
+        
+        *p* (float): Order of variogram score. Standard choices include *p* = 1 and
+        *p* = 0.5 (default).
+        
+        *w* (np.array):  Numeric array of weights for *dat* used in the variogram
+          score.  If no weights are specified, constant weights with *w*
+          = 1 are used.
+
 
     Returns:
-        float: Returns the variogram score of the forecast-observation pair.
+        float: Variogram score of the forecast-observation pair.
 
     """
+
     try:
         y = np.array(y)
         dat = np.array(dat)
+        if w is None :
+            w_r = rpy2.robjects.NULL
+        else:
+            w = np.array(w)
+            w_r = np2ri.py2ri(w)
+        p_r = float(p)
         y_r = rpy2.robjects.FloatVector(y)
         dat_r = np2ri.py2ri(dat)
     except Exception:
         print('Input has wrong format.')
-
-    return srl.vs_sample(y_r, dat_r)[0]
     
-def vs_sample_vec(y_mat, dat_mat):
+    return srl.vs_sample(y = y_r, dat = dat_r, w = w_r, p = p_r)[0]
+
+def vs_sample_vec(y_arr, dat_arr, w=None, p=0.5):
     """Sample Variogram Score; vectorized version
 
-    This function calculates the Energy score for a given pair of
-    a series of observations (y_mat) and 
-    corresponding ensemble predictions (dat_mat). The data in
-    y_mat is considered to be a series of multivariate observations.
+    Compute the variogram score VS(*y_arr*, *dat_arr*), where *y_arr* is a series of 
+    *d*-dimensional realizations and *dat_arr* is a seires of
+    samples of multivariate forecasts.
 
     Args:
-        y_mat (np.array): Series of multivariate observations of 
-        dimension d times n. Where d is the dimension of the multivariate
-        observation and n the number of observations.
+        *y_arr* (np.array): Series of realized values of 
+        shape (*d*, *n*), where *d* is the dimension of the realized values,
+        and *n* the number of realizations. Hence each column contains a single 
+        realization.
         
-        dat (np.array): Ensemble prediction for the values y_mat containing
-        d times m times n values where m is the number of ensemble members.
+        *dat_arr* (np.array): Forecast sample  
+        of shape (*d*, *m*, *n*), where
+        *d* is the dimension of the realized values, *m* the number of 
+        samples, and *n* the number of realizations.
+        
+        *p* (float): Order of variogram score. Standard choices include *p* = 1 and
+        *p* = 0.5 (default).
+        
+        *w* (np.array):  Numeric array of weights for *dat* used in the variogram
+          score.  If no weights are specified, constant weights with *w*
+          = 1 are used.
 
     Returns:
-        float: Returns the variogram score of the forecast-observation series.
+        *np.array*: Variogram score of each forecast-observation pair.
 
     """
     try:
-        y_mat = np.array(y_mat)
-        y_mat = np.expand_dims(y_mat, 1)
-        dat_mat = np.array(dat_mat)
+        y_arr = np.array(y_arr)
+        y_arr = np.expand_dims(y_arr, 1)
+        dat_arr = np.array(dat_arr)
+        p_r = float(p)
+        if w is None :
+            w_r = rpy2.robjects.NULL
+        else:
+            w = np.array(w)
+            w_r = np2ri.py2ri(w)
     except Exception:
         print('Input has wrong format.')
     else:
-        if (len(y_mat.shape) != 3
-            or len(dat_mat.shape) != 3
-            or y_mat.shape[0] != dat_mat.shape[0]
-            or y_mat.shape[2] != dat_mat.shape[2]
+        if (len(y_arr.shape) != 3
+            or len(dat_arr.shape) != 3
+            or y_arr.shape[0] != dat_arr.shape[0]
+            or y_arr.shape[2] != dat_arr.shape[2]
         ):
             raise ValueError('Parameters have wrong dimension.')
 
-    df = np.concatenate((y_mat,dat_mat),axis = 1)
+    df = np.concatenate((y_arr,dat_arr),axis = 1)
     df_r = np2ri.py2ri(df)
     rpy2.robjects.globalenv['df'] =  df_r
+    rpy2.robjects.globalenv['p'] =  p_r
+    rpy2.robjects.globalenv['w'] =  w_r
     
-    return rpy2.robjects.r('mean(apply(df, c(3), function(x) vs_sample(x[,1], x[,-1])))')[0]
+    vscr_r = rpy2.robjects.r('apply(df, c(3), function(x) vs_sample(x[,1], x[,-1], w, p))')
+    return np.array(vscr_r)
     
 def crps_sample(y, dat):
     """Sample Continuous Ranked Probability Score (CRPS)
 
-    This function calculates the CRPS for a given pair of
-    observation (y) and ensemble prediction (dat). The observation
-    y is considered to be univariate.
+    Compute CRPS(*y*, *dat*), where *y* is a univariate
+    realization vector and *dat* is a sample of forecasts.
 
     Args:
-        y (float): Univariate observation.
+        *y* (float): Realized value.
         
-        dat (np.array): Ensemble prediction for value y of length m which is
-        the number of ensemble members.
+        *dat* (np.array): Forecast sample of length *m*, where 
+        *m* is the number of sample members.
 
     Returns:
-        float: Returns the CRPS of the forecast-observation pair.
+        float: CRPS of the forecast-observation pair.
 
     """
+
     try:
         y_r = float(y)
         dat = np.array(dat)
@@ -175,40 +212,42 @@ def crps_sample(y, dat):
         
     return srl.crps_sample(y_r, dat_r)[0]
     
-def crps_sample_vec(y_vec, dat_mat):
+def crps_sample_vec(y_arr, dat_arr):
     """Sample Continuous Ranked Probability Score (CRPS); vectorized version
 
-    This function calculates the CRPS for a given pair of
-    a series of observations (y_vec) and 
-    corresponding ensemble predictions (dat_mat). The data in
-    y_vec is considered to be a series of univariate observations.
+    Compute CRPS(*y_arr*, *dat_arr*), where *y_arr* is a series of 
+    univariate realizations and *dat_arr* is a seires of
+    samples of forecasts.
 
     Args:
-        y_vec (np.array): Series of multivariate observations of 
-        length n which is the number of observations.
+        *y_arr* (np.array): Series of realized values of 
+        length *n*, where *n* is the number of realizations. 
         
-        dat_mat (np.array): Ensemble prediction for the values y_vec containing
-        m times n values where m is the number of ensemble members.
+        *dat_arr* (np.array): Forecast sample  
+        of shape (*m*, *n*), where
+        *m* is the number of 
+        samples, and *n* the number of realizations.
 
     Returns:
-        float: Returns the CRPS of the forecast-observation series.
+        np.array: CRPS of each forecast-observation pair.
 
     """
     try:
-        y_vec = np.array(y_vec)
-        dat_mat = np.array(dat_mat)
-        y_r = rpy2.robjects.FloatVector(y_vec)
-        dat_r = np2ri.py2ri(dat_mat)
+        y_arr = np.array(y_arr)
+        dat_arr = np.array(dat_arr)
+        y_r = rpy2.robjects.FloatVector(y_arr)
+        dat_r = np2ri.py2ri(dat_arr)
     except Exception:
         print('Input has wrong format.')
     else:
-        if (len(y_vec.shape) != 1 
-            or len(dat_mat.shape) != 2 
-            or y_vec.shape[0] != dat_mat.shape[1]
+        if (len(y_arr.shape) != 1 
+            or len(dat_arr.shape) != 2 
+            or y_arr.shape[0] != dat_arr.shape[1]
         ):
             raise ValueError('Parameters have wrong dimension.')
 
     rpy2.robjects.globalenv['obs'] =  y_r
     rpy2.robjects.globalenv['forc'] =  dat_r
     
-    return rpy2.robjects.r('mean(apply(rbind(obs,forc), 2, function(x) crps_sample(x[1], x[-1])))')[0]
+    crps_r = rpy2.robjects.r('apply(rbind(obs,forc), 2, function(x) crps_sample(x[1], x[-1]))')
+    return np.array(crps_r)

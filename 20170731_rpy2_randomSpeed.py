@@ -17,6 +17,7 @@ loop_speed[:] = 0
 vec_speed = np.empty(len(N))
 vec_speed[:] = 0
 k = 0
+n = 50
 
 for n in N:
     y  =  np.random.rand(d, n)
@@ -47,7 +48,7 @@ for n in N:
     k += 1
     
 # Check
-round(abs(crps - crps_v) + abs(escr - escr_v) + abs(vscr - vscr_v), 5)
+round(abs(crps - crps_v.mean()) + abs(escr - escr_v.mean()) + abs(vscr - vscr_v.mean()), 5)
 
 # Plot
 plt.plot(N,loop_speed, 'r', N,vec_speed, 'b')
