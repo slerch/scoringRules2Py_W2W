@@ -12,7 +12,7 @@ Python interface for the scoringRules R package (https://github.com/FK83/scoring
  * netCDF4 and Python-package netCDF4
  * Python-package xarray
 
-History:
+## History:
 August 2017: main code and documentation
 July 2017: initial commits
 June 2017: repository created
