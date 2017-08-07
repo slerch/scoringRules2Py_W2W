@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Interface for some functionality of the R-package scoringRules.
-It computes univariate and multivariate scores of the form *S(y, dat)*, where *S* is a
-proper scoring rule, *y* is a *d*-dimensional realization vector and
-*dat* is a simulated sample of multivariate forecasts. Available are
-CRPS, energy score and variogram score of order *p*.
+It computes univariate and multivariate scores of the form *S(y, dat)*, 
+where *S* is a proper scoring rule, *y* is a *d*-dimensional realization vector 
+and *dat* is a simulated sample of forecasts. Available are the continuous
+ranked probability score (CRPS), energy score and variogram score of order *p*.
 
 """
 
@@ -17,16 +17,21 @@ srl = importr('scoringRules')
 def es_sample(y, dat):
     """Sample Energy Score
 
-    Compute the energy score ES(*y*, *dat*), where *y* is a *d*-dimensional
-    realization vector and dat is a sample of multivariate
-    forecasts.
+    Compute the energy score ES(*y*, *dat*), where *y* is a vector of a
+    *d*-dimensional observation and dat is a multivariate ensemble
+    forecast. 
+    For details, see Gneiting, T., Stanberry, L.I., Grimit, E.P.,
+    Held, L. and Johnson, N.A. (2008). Assessing probabilistic forecasts of 
+    multivariate quantities, with an application to ensemble predictions of 
+    surface winds. Test, 17, 211–235.
 
     Args:
         *y* (np.array): Realized values (numeric vector of length *d*).
         
         *dat* (np.array): Forecast sample of shape (*d*, *m*), where 
         *d* is the dimension of the realization and 
-        *m* the number of sample members.
+        *m* the number of sample members. Each of the *m* columns corresponds 
+        to the *d*-dimensional forecast of one ensemble member.
 
     Returns:
         float: Energy score of the forecast-observation pair.
@@ -46,14 +51,18 @@ def es_sample_vec(y_arr, dat_arr):
     """Sample Energy Score; vectorized version
 
     Compute the energy score ES(*y_arr*, *dat_arr*), where *y_arr* is a series of 
-    *d*-dimensional realizations and *dat_arr* is a seires of 
+    *d*-dimensional observations and *dat_arr* is a series of 
     samples of multivariate forecasts.
+    For details, see Gneiting, T., Stanberry, L.I., Grimit, E.P.,
+    Held, L. and Johnson, N.A. (2008). Assessing probabilistic forecasts of 
+    multivariate quantities, with an application to ensemble predictions of 
+    surface winds. Test, 17, 211-235.
 
     Args:
-        *y_arr* (np.array): Series of realized values of 
-        shape (*d*, *n*), where *d* is the dimension of the realized values,
-        and *n* the number of realizations. Hence each column contains a single 
-        realization.
+        *y_arr* (np.array): Series of observations of 
+        shape (*d*, *n*), where *d* is the dimension of the observations,
+        and *n* the number of observation. Hence each column contains a single 
+        *d*-dimensional realization.
         
         *dat_arr* (np.array): Forecast sample  
         of shape (*d*, *m*, *n*), where
@@ -88,12 +97,15 @@ def es_sample_vec(y_arr, dat_arr):
 def vs_sample(y, dat, w=None, p=0.5):
     """Sample Variogram Score
 
-    Compute the variogram score VS(*y*, *dat*) of order *p*, where *y* is a *d*-dimensional
-    realization vector and dat is a sample of multivariate
-    forecasts.
+    Compute the variogram score VS(*y*, *dat*) of order *p*, where *y* is a 
+    *d*-dimensional observation and dat is a multivariate ensemble
+    forecast. 
+    For details, see Scheuerer, M. and Hamill, T.M. (2015). Variogram-based 
+    proper scoring rules for probabilistic forecasts of multivariate quantities. 
+    Monthly Weather Review, 143, 1321-1334.
 
     Args:
-        *y* (np.array): Realized values (numeric vector of length *d*).
+        *y* (np.array): Observation (numeric vector of length *d*).
         
         *dat* (np.array): Forecast sample of shape (*d*, *m*), where 
         *d* is the dimension of the realization and 
@@ -132,14 +144,17 @@ def vs_sample_vec(y_arr, dat_arr, w=None, p=0.5):
     """Sample Variogram Score; vectorized version
 
     Compute the variogram score VS(*y_arr*, *dat_arr*), where *y_arr* is a series of 
-    *d*-dimensional realizations and *dat_arr* is a seires of
+    *d*-dimensional observations and *dat_arr* is a series of 
     samples of multivariate forecasts.
+    For details, see Scheuerer, M. and Hamill, T.M. (2015). Variogram-based 
+    proper scoring rules for probabilistic forecasts of multivariate quantities. 
+    Monthly Weather Review, 143, 1321-1334.
 
     Args:
-        *y_arr* (np.array): Series of realized values of 
-        shape (*d*, *n*), where *d* is the dimension of the realized values,
-        and *n* the number of realizations. Hence each column contains a single 
-        realization.
+        *y_arr* (np.array): Series of observations of 
+        shape (*d*, *n*), where *d* is the dimension of the observations,
+        and *n* the number of observation. Hence each column contains a single 
+        *d*-dimensional realization.
         
         *dat_arr* (np.array): Forecast sample  
         of shape (*d*, *m*, *n*), where
@@ -190,13 +205,15 @@ def crps_sample(y, dat):
     """Sample Continuous Ranked Probability Score (CRPS)
 
     Compute CRPS(*y*, *dat*), where *y* is a univariate
-    realization vector and *dat* is a sample of forecasts.
-
+    observation and *dat* is an ensemble forecasts.
+    For details, see Matheson, J.E. and Winkler, R.L. (1976). Scoring rules for
+    continuous probability distributions. Management Science, 22, 1087-1096.
+    
     Args:
-        *y* (float): Realized value.
+        *y* (float): Observation.
         
-        *dat* (np.array): Forecast sample of length *m*, where 
-        *m* is the number of sample members.
+        *dat* (np.array): Forecast ensemble of length *m*, where 
+        *m* is the number of members.
 
     Returns:
         float: CRPS of the forecast-observation pair.
@@ -216,17 +233,18 @@ def crps_sample_vec(y_arr, dat_arr):
     """Sample Continuous Ranked Probability Score (CRPS); vectorized version
 
     Compute CRPS(*y_arr*, *dat_arr*), where *y_arr* is a series of 
-    univariate realizations and *dat_arr* is a seires of
-    samples of forecasts.
+    univariate observations and *dat_arr* is a series of
+    ensemble forecasts.
+    For details, see Matheson, J.E. and Winkler, R.L. (1976). Scoring rules for
+    continuous probability distributions. Management Science, 22, 1087-1096.
 
     Args:
-        *y_arr* (np.array): Series of realized values of 
-        length *n*, where *n* is the number of realizations. 
+        *y_arr* (np.array): Series of observations of 
+        length *n*, where *n* is the number of observations. 
         
-        *dat_arr* (np.array): Forecast sample  
-        of shape (*m*, *n*), where
-        *m* is the number of 
-        samples, and *n* the number of realizations.
+        *dat_arr* (np.array): Ensemble forecasts  
+        of shape (*m*, *n*), where *m* is the number of ensemble members, 
+        and *n* the number of observation.
 
     Returns:
         np.array: CRPS of each forecast-observation pair.
