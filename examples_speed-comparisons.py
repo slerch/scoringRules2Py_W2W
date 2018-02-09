@@ -12,7 +12,7 @@ import time
 import properscoring as psr
 
 d = 1 
-N = [50,500,1000,5000,10000,25000,50000,100000]
+N = [50,500,1000,5000,10000,20000,50000,100000]
 st_speed = np.empty(len(N))
 st_speed[:] = 0
 st_meancrps = np.empty(len(N))
